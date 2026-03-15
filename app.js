@@ -15,7 +15,7 @@
   };
 
   var MANEUVER_ICONS = {
-    'depart': '🚀', 'arrive': '🏁',
+    'depart': '🛴', 'arrive': '🏁',
     'turn-left': '⬅️', 'turn-right': '➡️', 'turn-straight': '⬆️',
     'turn-slight left': '↖️', 'turn-slight right': '↗️',
     'turn-sharp left': '↩️', 'turn-sharp right': '↪️',
