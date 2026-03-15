@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#2E7D32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Катим!">
+<meta name="description" content="Детский навигатор для безопасных поездок на самокате и велосипеде в школу">
+<title>Катим в школу</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="styles.css"/>
+<link id="appIconLink" rel="icon" type="image/png" href="">
+<link id="appleTouchIcon" rel="apple-touch-icon" href="">
+<link id="manifestLink" rel="manifest" href="">
+</head>
+<body>
+
+<!-- Search header -->
+<div id="searchBar" class="search-bar">
+  <div class="search-input-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Куда едем?" autocomplete="off">
+    <button id="searchClear" class="search-clear hidden">✕</button>
+  </div>
+  <button id="profileBtn" class="profile-btn" title="Профиль">🛴</button>
+</div>
+<div id="searchResults" class="search-results hidden"></div>
+
+<!-- Map -->
+<div id="map"></div>
+
+<!-- FAB buttons -->
+<div class="fab-container">
+  <button id="fabLocate" class="fab" title="Моё местоположение">📍</button>
+  <button id="fabDanger" class="fab fab-danger" title="Добавить метку">⚠️</button>
+</div>
+
+<!-- Marker type sheet -->
+<div id="markerSheet" class="bottom-sheet hidden">
+  <div class="sheet-handle"></div>
+  <h3>Выберите тип метки</h3>
+  <div class="marker-grid" id="markerGrid"></div>
+  <button class="btn btn-secondary sheet-cancel" id="markerCancel">Отмена</button>
+</div>
+
+<!-- Route info sheet -->
+<div id="routeSheet" class="bottom-sheet hidden">
+  <div class="sheet-handle"></div>
+  <button class="sheet-close" id="routeClose">✕</button>
+  <h3 id="routeTitle">Маршрут</h3>
+  <div class="route-summary" id="routeSummary"></div>
+  <div class="route-steps" id="routeSteps"></div>
+  <button class="btn btn-primary btn-go" id="btnGo">🛴 Поехали!</button>
+</div>
+
+<!-- Navigation panel -->
+<div id="navPanel" class="nav-panel hidden">
+  <div class="nav-maneuver">
+    <span class="nav-icon" id="navIcon">⬆️</span>
+    <div class="nav-info">
+      <div class="nav-instruction" id="navInstruction">Следуйте по маршруту</div>
+      <div class="nav-distance" id="navDistance"></div>
+    </div>
+  </div>
+  <div class="nav-footer">
+    <span id="navRemaining"></span>
+    <span id="navEta"></span>
+    <button class="btn btn-danger btn-stop" id="btnStop">Стоп</button>
+  </div>
+</div>
+
+<!-- Places panel -->
+<div id="placesPanel" class="tab-panel hidden">
+  <div class="panel-header">
+    <h2>📍 Мои места</h2>
+    <button class="btn btn-primary btn-add-place" id="btnAddPlace">+ Добавить</button>
+  </div>
+  <div id="placesList" class="places-list"></div>
+</div>
+
+<!-- Place modal -->
+<div id="placeModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h3 id="placeModalTitle">Новое место</h3>
+    <input type="text" id="placeNameInput" placeholder="Название" maxlength="30">
+    <div class="icon-picker" id="iconPicker"></div>
+    <div class="place-coords" id="placeCoords">Координаты не выбраны</div>
+    <div class="place-btns">
+      <button class="btn btn-secondary" id="placeHere">📍 Я тут</button>
+      <button class="btn btn-secondary" id="placeOnMap">🗺️ На карте</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="placeModalCancel">Отмена</button>
+      <button class="btn btn-primary" id="placeModalSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stats panel -->
+<div id="statsPanel" class="tab-panel hidden">
+  <div class="panel-header"><h2>📊 Статистика</h2></div>
+  <div class="stats-cards" id="statsCards"></div>
+  <h3 class="trips-title">История поездок</h3>
+  <div id="tripsList" class="trips-list"></div>
+</div>
+
+<!-- Settings panel -->
+<div id="settingsPanel" class="tab-panel hidden">
+  <div class="panel-header"><h2>⚙️ Настройки</h2></div>
+  <div class="settings-list">
+    <div class="setting-row">
+      <span>🔊 Голосовые подсказки</span>
+      <label class="toggle"><input type="checkbox" id="setVoice" checked><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+      <span>📳 Вибрация</span>
+      <label class="toggle"><input type="checkbox" id="setVibration" checked><span class="slider"></span></label>
+    </div>
+    <div class="setting-row">
+      <span>🚗 Профиль маршрута</span>
+      <select id="setProfile" class="setting-select">
+        <option value="foot">🛴 Самокат / пешком</option>
+        <option value="bicycle">🚲 Велосипед</option>
+      </select>
+    </div>
+    <div class="setting-divider"></div>
+    <button class="btn btn-secondary setting-btn" id="btnExport">📤 Экспорт данных</button>
+    <button class="btn btn-secondary setting-btn" id="btnImport">📥 Импорт данных</button>
+    <input type="file" id="importFile" accept=".json" class="hidden">
+    <button class="btn btn-danger setting-btn" id="btnClear">🗑️ Очистить данные</button>
+    <div class="app-version">Катим в школу v1.0</div>
+  </div>
+</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-tab active" data-tab="map"><span class="nav-tab-icon">🗺️</span><span class="nav-tab-label">Карта</span></button>
+  <button class="nav-tab" data-tab="places"><span class="nav-tab-icon">📍</span><span class="nav-tab-label">Места</span></button>
+  <button class="nav-tab" data-tab="stats"><span class="nav-tab-icon">📊</span><span class="nav-tab-label">Статистика</span></button>
+  <button class="nav-tab" data-tab="settings"><span class="nav-tab-icon">⚙️</span><span class="nav-tab-label">Настройки</span></button>
+</nav>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- PWA Install banner -->
+<div id="installBanner" class="install-banner hidden">
+  <span>Установите приложение!</span>
+  <button id="installBtn" class="btn btn-primary btn-sm">Установить</button>
+  <button id="installDismiss" class="install-dismiss">✕</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
