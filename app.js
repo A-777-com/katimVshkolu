@@ -164,7 +164,7 @@
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '© OpenStreetMap'
+      attribution: ''
     }).addTo(S.map);
 
     S.map.on('click', onMapClick);
