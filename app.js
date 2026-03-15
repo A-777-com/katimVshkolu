@@ -158,7 +158,7 @@
   function initMap() {
     S.map = L.map('map', {
       zoomControl: false,
-      attributionControl: true,
+      attributionControl: false,
       maxZoom: 19
     }).setView([55.75, 37.62], 13);
 
